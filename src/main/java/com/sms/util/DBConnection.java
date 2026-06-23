@@ -28,11 +28,26 @@ public class DBConnection {
     }
 
     /**
-     * Obtains a connection from the JNDI DataSource pool.
+     * Obtains a connection from the JNDI DataSource pool or falls back to cloud DB environment variables.
      * @return Connection object
      * @throws SQLException if connection retrieval fails
      */
     public static Connection getConnection() throws SQLException {
+        // Cloud DB fallback detection (Render, Railway, etc.)
+        String cloudUrl = System.getenv("MYSQL_URL");
+        if (cloudUrl != null && !cloudUrl.isEmpty()) {
+            if (cloudUrl.startsWith("mysql://")) {
+                cloudUrl = "jdbc:" + cloudUrl;
+            }
+            try {
+                // Load driver explicitly for non-JNDI container environments
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                return java.sql.DriverManager.getConnection(cloudUrl);
+            } catch (Exception e) {
+                System.err.println("WARNING: Cloud DB connection failed, falling back to JNDI: " + e.getMessage());
+            }
+        }
+
         if (dataSource == null) {
             throw new SQLException("DataSource is not initialized. Check JNDI configurations in context.xml and web.xml.");
         }
