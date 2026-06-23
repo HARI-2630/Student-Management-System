@@ -1,0 +1,13 @@
+target/
+*.class
+*.war
+*.ear
+*.jar
+.DS_Store
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+cookie.txt
+cookie2.txt

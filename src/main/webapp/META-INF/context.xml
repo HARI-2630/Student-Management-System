@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <!-- 
+      Tomcat JNDI JDBC DataSource Resource.
+      This defines connection pooling parameters and holds database credentials.
+    -->
+    <Resource name="jdbc/SMSDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://localhost:3306/sms_db?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC"
+              username="root"
+              password="Root1234"
+              maxTotal="20"
+              maxIdle="10"
+              maxWaitMillis="10000"/>
+
+    <!-- 
+      Tomcat JNDI Mail Session Resource.
+      Configure with your SMTP credentials (e.g. Gmail App Password).
+    -->
+    <Resource name="mail/Session"
+              auth="Container"
+              type="jakarta.mail.Session"
+              mail.smtp.host="smtp.gmail.com"
+              mail.smtp.port="587"
+              mail.smtp.auth="true"
+              mail.smtp.starttls.enable="true"
+              mail.smtp.username="aura.sms.dev@gmail.com"
+              mail.smtp.password="your_app_password_here"/>
+</Context>
