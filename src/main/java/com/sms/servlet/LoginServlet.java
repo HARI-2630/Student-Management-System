@@ -28,16 +28,10 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            if (session.getAttribute("user") != null) {
-                // Already logged in, redirect to dashboard servlet
-                response.sendRedirect(request.getContextPath() + "/dashboard");
-                return;
-            } else if (session.getAttribute("pendingOtpUser") != null) {
-                // Pending OTP, redirect to OTP verification page
-                response.sendRedirect(request.getContextPath() + "/login-otp");
-                return;
-            }
+        if (session != null && session.getAttribute("user") != null) {
+            // Already logged in, redirect to dashboard servlet
+            response.sendRedirect(request.getContextPath() + "/dashboard");
+            return;
         }
         // Forward to the JSP login view
         request.getRequestDispatcher("/views/common/login.jsp").forward(request, response);
@@ -53,21 +47,12 @@ public class LoginServlet extends HttpServlet {
         User user = userDAO.authenticate(email, password);
 
         if (user != null) {
-            // Generate a secure 6-digit OTP
-            java.security.SecureRandom rand = new java.security.SecureRandom();
-            String otp = String.format("%06d", rand.nextInt(1000000));
-
-            // Setup session and attach pending authentication details
+            // Setup session and attach user object
             HttpSession session = request.getSession(true);
-            session.setAttribute("pendingOtpUser", user);
-            session.setAttribute("otpCode", otp);
-            session.setAttribute("otpExpiry", System.currentTimeMillis() + (5 * 60 * 1000)); // 5 minutes
+            session.setAttribute("user", user);
             
-            // Send OTP email asynchronously
-            com.sms.util.EmailUtil.sendOtpEmailAsync(user.getEmail(), otp);
-            
-            // Redirect to OTP verification page
-            response.sendRedirect(request.getContextPath() + "/login-otp");
+            // Redirect to central dashboard routing
+            response.sendRedirect(request.getContextPath() + "/dashboard");
         } else {
             // Return back with error status
             request.setAttribute("error", "Invalid email or password.");

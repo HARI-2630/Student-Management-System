@@ -1,6 +1,6 @@
 # AuraSMS - Enterprise Student Management System
 
-A portfolio-grade, role-based Student Management System built using a clean, MVC-compliant Java web architecture. It leverages Jakarta EE specifications (Servlets 6.0 and JSP 3.1) deployed on Apache Tomcat 10, with a normalized MySQL database, JNDI connection pooling, and email-based OTP security.
+A portfolio-grade, role-based Student Management System built using a clean, MVC-compliant Java web architecture. It leverages Jakarta EE specifications (Servlets 6.0 and JSP 3.1) deployed on Apache Tomcat 10, with a normalized MySQL database, and JNDI connection pooling.
 
 ---
 
@@ -23,7 +23,7 @@ src/main/webapp/
         ├── admin/        # Admin panel views
         ├── teacher/      # Faculty course logs and grades entry
         ├── student/      # Student profile, marks, and attendance logs
-        └── common/       # Common fragments (navbars, error pages, login page, OTP page)
+        └── common/       # Common fragments (navbars, error pages, login page)
 ```
 
 ---
@@ -64,16 +64,16 @@ Here are the precise answers to the questions HR and Technical interviewers will
 ### 👥 HR Interview Questions & Answers
 
 #### 💬 "Tell me about this project."
-> "I built **AuraSMS**, a role-based Student Management System designed to handle real academic operations like enrollment, course management, attendance tracking, and grades. The system implements a strict Model-View-Controller (MVC) architecture using Java servlets on Tomcat. It features role-based views for Admin, Teachers, and Students, secured by standard filters and email-based OTP verification, utilizing connection pooling for high-performance database interactions."
+> "I built **AuraSMS**, a role-based Student Management System designed to handle real academic operations like enrollment, course management, attendance tracking, and grades. The system implements a strict Model-View-Controller (MVC) architecture using Java servlets on Tomcat. It features role-based views for Admin, Teachers, and Students, secured by standard filters, utilizing connection pooling for high-performance database interactions."
 
 #### 💬 "What was your role in this project?"
 > "I was the **sole full-stack developer**. I handled the entire lifecycle—from normalization of the database schema (8 relational tables with cascading deletions) to creating JDBC DAO transactional methods in Java, mapping servlet routes, implementing middleware filters, and styling the frontend with responsive dark-theme glassmorphism using Bootstrap 5."
 
 #### 💬 "What problem does this solve?"
-> "It solves operational tracking and security silos in academic systems. In typical student systems, teachers, admins, and students use fragmented interfaces, and database credentials or logic layers are often mixed. This project consolidates operations into a single application where role-based access control restricts menus, auto-calculates GPA metrics, flags outstanding overdue invoices dynamically, and secures authentication using password hashing and OTP verification."
+> "It solves operational tracking and security silos in academic systems. In typical student systems, teachers, admins, and students use fragmented interfaces, and database credentials or logic layers are often mixed. This project consolidates operations into a single application where role-based access control restricts menus, auto-calculates GPA metrics, flags outstanding overdue invoices dynamically, and secures authentication using password hashing."
 
 #### 💬 "How long did it take you to build?"
-> "It took approximately **3 to 4 weeks** of active development. The first week was spent modeling the database, setting up JNDI configuration, and building the DAO CRUD layer. The second week was dedicated to servlet routing, core business math (GPA and attendance percentages), and filters. The remaining time was spent designing the glassmorphic frontend, testing edge cases, and implementing the asynchronous JNDI OTP mail system."
+> "It took approximately **3 to 4 weeks** of active development. The first week was spent modeling the database, setting up JNDI configuration, and building the DAO CRUD layer. The second week was dedicated to servlet routing, core business math (GPA and attendance percentages), and filters. The remaining time was spent designing the glassmorphic frontend, testing edge cases, and configuring connection pooling."
 
 #### 💬 "What challenges did you face?"
 > "My main challenge was **managing database transaction rollbacks in multi-table queries**. For example, when registering a student, we must first create a `user` record, obtain its auto-generated ID, and then create the `student` profile. If the student profile creation fails, the user record must not linger in the database. I resolved this by disabling `autoCommit` on the JDBC connection, wrapping the operations in a single transaction, and executing a rollback in the `catch` block to ensure transactional integrity."
@@ -86,7 +86,7 @@ Here are the precise answers to the questions HR and Technical interviewers will
 > "I chose Jakarta EE (Servlets, JSP, Filters) to understand **how web frameworks function under the hood**. Spring Boot abstracts servlet routing and database transactions behind annotations like `@RestController` and `@Transactional`. Implementing the raw MVC architecture myself forced me to master HTTP servlet life-cycles, JSTL tag-library compilation, session tracking, filters, connection pooling, and raw SQL transaction management, giving me a solid foundational grasp of the Java Web Spec."
 
 #### 💬 "How does your login work? How do you handle sessions?"
-> "When a user submits credentials, the `LoginServlet` intercepts the request and queries `UserDAO` to authenticate the user using SHA-256 hex hashed passwords. Upon successful authentication, it generates a secure 6-digit OTP code, stores the code and user details in the HTTP session as 'pending authentication', and sends an email. Once the user enters the correct code, the user is promoted to 'active' session status, bound under `session.setAttribute("user", user)`. We use cookie-based session tracking (`JSESSIONID`) managed by the Tomcat container with the `HttpOnly` flag enabled to prevent cross-site scripting (XSS) session hijacking."
+> "When a user submits credentials, the `LoginServlet` intercepts the request and queries `UserDAO` to authenticate the user using SHA-256 hex hashed passwords. Upon successful authentication, the user is bound to the active session under `session.setAttribute("user", user)`. We use cookie-based session tracking (`JSESSIONID`) managed by the Tomcat container with the `HttpOnly` flag enabled to prevent cross-site scripting (XSS) session hijacking."
 
 #### 💬 "How did you prevent SQL injection?"
 > "I prevented SQL injection by using **`PreparedStatement` placeholders (`?`) for every single database query**. Placeholders compile the SQL query template on the database server before merging parameter values. When parameters are bound (e.g. `ps.setString(1, input)`), they are treated strictly as literal values rather than executable SQL code, making SQL injection attacks impossible."
@@ -128,7 +128,6 @@ mysql -u root -p < schema.sql
 ### 2. Configure Tomcat JNDI Credentials
 Ensure database and SMTP credentials are set inside [context.xml](file:///Users/ntr/Desktop/Student%20Management%20System/src/main/webapp/META-INF/context.xml):
 - `jdbc/SMSDB` contains your local MySQL password.
-- `mail/Session` contains your SMTP credentials (optional, prints to log console if left default).
 
 ### 3. Build & Deploy
 Compile and build the `.war` web package:
@@ -142,4 +141,3 @@ Copy `target/sms.war` into your Tomcat `webapps/` directory and access the conte
 - **Admin**: `admin@sms.com` / Password: `admin123`
 - **Teacher**: `grace.hopper@sms.com` / Password: `teacher123`
 - **Student**: `alice@sms.com` / Password: `student123`
-*(OTP codes will print in your terminal logs or `catalina.out` for easy local verification.)*

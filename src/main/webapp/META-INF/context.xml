@@ -14,18 +14,4 @@
               maxTotal="20"
               maxIdle="10"
               maxWaitMillis="10000"/>
-
-    <!-- 
-      Tomcat JNDI Mail Session Resource.
-      Configure with your SMTP credentials (e.g. Gmail App Password).
-    -->
-    <Resource name="mail/Session"
-              auth="Container"
-              type="jakarta.mail.Session"
-              mail.smtp.host="smtp.gmail.com"
-              mail.smtp.port="587"
-              mail.smtp.auth="true"
-              mail.smtp.starttls.enable="true"
-              mail.smtp.username="aura.sms.dev@gmail.com"
-              mail.smtp.password="your_app_password_here"/>
 </Context>

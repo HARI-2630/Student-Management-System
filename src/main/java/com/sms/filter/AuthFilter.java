@@ -38,34 +38,18 @@ public class AuthFilter implements Filter {
         boolean isStaticResource = path.startsWith("/assets/") || path.startsWith("/favicon.ico");
         boolean isLoginResource = path.equals("/login") || path.equals("/views/common/login.jsp");
         boolean isErrorPage = path.equals("/views/common/error.jsp");
-        boolean isOtpResource = path.equals("/login-otp") || path.equals("/views/common/otp.jsp");
 
         if (isStaticResource || isLoginResource || isErrorPage) {
             chain.doFilter(request, response);
             return;
         }
 
-        if (isOtpResource) {
-            if (session != null && session.getAttribute("pendingOtpUser") != null) {
-                chain.doFilter(request, response);
-            } else {
-                httpResponse.sendRedirect(contextPath + "/login");
-            }
-            return;
-        }
-
         // Verify if session exists and user object is bound
         User loggedInUser = (session != null) ? (User) session.getAttribute("user") : null;
-        User pendingOtpUser = (session != null) ? (User) session.getAttribute("pendingOtpUser") : null;
 
         if (loggedInUser == null) {
-            if (pendingOtpUser != null) {
-                // Password verified but OTP is still pending, enforce OTP entry
-                httpResponse.sendRedirect(contextPath + "/login-otp");
-            } else {
-                // Completely unauthenticated
-                httpResponse.sendRedirect(contextPath + "/login");
-            }
+            // User not logged in, redirect to login servlet
+            httpResponse.sendRedirect(contextPath + "/login");
             return;
         }
 
